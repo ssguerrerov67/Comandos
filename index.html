@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+    <link rel="icon" href="./favicon.ico" type="image/x-icon" sizes="16x16">
+    <title>Tren CLOUD</title>
+</head>
+<body>
+    <h1>Contenido del archivo.txt</h1>
+    <pre id="contenido"></pre> <!-- Contenedor para mostrar el contenido del archivo -->
+
+    <script>
+        // Función para cargar el contenido de archivo.txt
+        fetch('archivo.txt')
+            .then(response => {
+                if (!response.ok) throw new Error("No se pudo cargar el archivo");
+                return response.text();
+            })
+            .then(data => {
+                document.getElementById('contenido').textContent = data;
+            })
+            .catch(error => console.error('Error:', error));
+    </script>
+</body>
+</html>
