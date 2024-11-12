@@ -1,0 +1,377 @@
+Comandos Utiles Linux
+
+Shell
+sh -x .profile   (genera salida por pantalla del .profile)
+cat archivo.json | jq   (lo despliega en un formato leible, aptitude install jq  "lightweight and flexible command-line JSON processor") 
+
+SSH
+    ssh -i "$KEY_PATH" -o "StrictHostKeyChecking=no" $UNIX_USER@$SERV_HOST '. ~/.profile;/oracle/oracle/uat4/chequeoPostDumps/chequeoTablas.sh'
+    ssh-keygen -f prod      (y dos veces enter)
+    esto genera dos archivos prod y prod.pub (clave privada y publica)
+    la clave publica es la que debes copiar en ~/.ssh/authorized_keys en el servidor al cual le estas authorizando el acceso o destino
+    y la clave privada es la que usaras para conectarte desde tu servidor en ocaciones hay que pasarlo con la opcion -i
+    ssh -i prod usuario@servidor
+
+FIND
+    find . -name "*.log" -size +102400k -mtime +4 -exec ls -la {} \;
+    find . -xdev -type f | cut -d "/" -f 2 | sort | uniq -c | sort -n  (buscar totalidad de archivos por fallas de inodos)
+    find . -type f -exec grep -H 'text-to-find-here' {} \;    (buscar el contenido de un archivo en distintos directorios)
+
+NFS
+    exportfs    cat /etc/exports
+
+DECODE
+    echo –n ‘password’ | base64
+       cGFzc3dvcmQ=
+    echo 'cGFzc3dvcmQ=' | base64 --decode
+        –n ‘password’
+    echo  password | base64
+        cGFzc3dvcmQK
+    echo cGFzc3dvcmQK | base64 --decode
+        password
+
+Cuando el lenguaje da fallos en ssh con las respuestas Yes vs Si
+    export LANG=us
+
+SORT
+    cat nombres.txt | awk -F ',' '{print $1,$2}' | sort -nk2    (ordena columna 2)
+    ls -la | sort -k 1 -r                                       (1ero directorios luego archivos)
+    df -h | sort -nrk5
+
+Listar una serie de archivos y MANIPULARLOS
+    ls -latr Quiz1_*.png  | awk '{print $9" "}' > ssgv.txt  (lo redirecciona)
+    tr -d "\n" < ssgv.txt > ssgv.tx1                        (lo concatena uno al lado del otro)
+
+PDF to JPG
+    pdftoppm -jpeg Acuerdo_individual_2.pdf Acuerdo_individual_2.jpg
+
+JPG to PDF
+    img2pdf Banco*_5.jpeg --output Banco.pdf
+    tesseract imagen.png output_text -l spa     OCR imagen a texto con linux
+
+SED
+    sed -i 's|/users/gen/tefwrk4|/tefuser1/tef/abp/tefwrk4|g' archivodelcambio.sh
+    o
+    sed -i 's/abpwrk1/tefwrk4/g' archivodelcambio.sh
+    sed -i 's/\./,/' archivo.txt
+    sed -i 's/\,/./' archivo.txt
+
+oc get namespaces | egrep "dev|int|cert" | egrep -v "operacione|cicd|db"
+kubectl get pods --sort-by={metadata.creationTimestamp}
+
+    tkn pipelinerun list
+    tkn pipelinerun logs <pipelinerun>
+    tkn pipelinerun describe <pipelinerun>
+    tkn taskrun list | grep $(tkn pipelinerun list | awk '{print $1}' | tail -1)
+    tkn taskrun logs <taskrun>
+    tkn taskrun describe <taskrun>
+
+
+ARGOCD
+    argocd login server.domain.com --insecure --username XXXXX --password 'XXXXXX' --grpc-web
+    argocd app list --project <aplicacion>
+    argocd app get <aplicacion>
+    argocd app list --project <proyecto>
+
+
+SKOPEO
+    skopeo login default-route-openshift-image-registry.apps.ocpnp.cuyorh.tcloud.ar/movistar-paas-digital -u usuario -p sha256~XXXX --tls-verify=false
+    skopeo copy --insecure-policy docker://origen.dominio.com.ar/<namespace>/<imagen>:<version>  docker://destino.dominio.com.ar/<namespace>/<imagen>:<version> --dest-tls-verify=false --src-tls-verify=false
+
+    Inspect a remote image from a registry:
+        skopeo inspect docker://registry_hostname/image:tag
+    List available tags for a remote image:
+        skopeo list-tags docker://registry_hostname/image
+    Download an image from a registry:
+        skopeo copy docker://registry_hostname/image:tag dir:path/to/directory
+    Copy an image from one registry to another:
+        skopeo copy docker://source_registry/image:tag docker://destination_registry/image:tag
+    Delete an image from a registry:
+        skopeo delete docker://registry_hostname/image:tag
+    Log in to a registry:
+        skopeo login --username username registry_hostname
+
+Azure
+    az account show
+    az account set --subscription "xxxxx"
+    az resource list --output table
+    az network public-ip list --output table
+    az network nsg list --resource-group bdesa-bot-iac-rg --output table
+
+MANEJO DE VOLUMENES
+    vgs
+    lvs
+    pvs
+    pvscan
+    lvscan
+    vgscan
+    vgdisplay vg00
+    lvdisplay
+    lvdisplay -v lv_var
+    pvdisplay 
+    pvdisplay /dev/sda2
+    lvextend -L+1G /dev/mapper/vg00-lv_var
+    mkfs.ext4 /dev/vg03/lv_export 
+    resize4fs /dev/mapper/vg00-lv_var
+
+RED
+    nc -zv 10.167.52.137 445 22
+    ip addr  o  ip link
+    ip r
+    ip a
+    ip route show
+    arp 
+    arp -a
+    /etc/sysconfig/network-scripts/ifcfg-eth0
+    iptables -L -t net
+    netstat -an |grep 24351 o netstat -rn o netstat -av o netstat -plant
+    route -n 
+    dig cantv.com.ve -t soa mname  o  dig @8.8.8.8 -t soa dominio.com
+    nslookup servidor.com
+    traceroute servidor.com
+    curl http://pagina.web.com:puerto/ruta/archivo.jnlp
+    whois www.pagina.com
+
+COPIA
+    scp -P2222 VDC2_net_appl.tar tooladm@190.210.60.2:/tefnfs/tef/tooladm/VDC1_net_appl.tar
+    rsync -avh -e 'ssh -p 5437' oracle@localhost:/oracle98_02/backup/*.dmp .    (con tunel)
+
+DOCKER
+    sudo apt install docker.io
+    sudo pacman -S docker
+    sudo emerge -a docker
+    sudo systemctl start docker
+    /etc/init.d/docker start
+    sudo gpasswd -a tu-usuario docker
+    newgrp docker
+    docker version
+    docker info
+    docker search debian
+    https://hub.docker.com/explore/
+    docker pull busybox
+    docker images
+    docker rmi “ID de la imagen”        eliminar una imagen
+    docker run -it busybox sh
+    docker ps -a
+    docker pull debian
+    docker pull ubuntu
+    docker pull archlinux
+    docker exec -it contenedor bash
+    docker run -it debian sh
+    docker run -it ubuntu bash
+    docker run -it archlinux /bin/bash
+        apt-get update & apt-get upgrade
+        para actualizar el sistema.
+        Instalamos tres paquetes básicos:
+        apt-get install nano htop screenfetch
+        El editor nano, el visor de procesos de sistema htop y screenfetch para embellecer nuestra terminal.
+        editamos con nano el archivo de configuración de bash:
+        nano /root/.bashrc
+        y le añadimos la línea:
+        screenfetch     ctl+o y ctl+x para guardar y salir de nano.
+    docker commit -m "Debian actualizado y con nano, htop y screenfetch" -a essau 831e2760f30b deb
+    docker run -it debian bash
+        (si intento arrancar una imagen que no tengo en local primero la descargará)
+        docker start ID (o nombre)  (arrancar un contenedor)
+    docker attach ID
+    docker rm ID (o nombre)
+    docker commit -m “comentario” -a autor ID nuevo-nombre
+    docker logs -f
+    docker logs -f jenkins
+    docker-compose up -d
+    docker-compose stop
+    docker-compose start
+    docker-compose restart jenkins
+    docker stop id_imagen
+    docker stop db
+    docker rmi -f ab631cb41bd5
+    docker images purge
+    docker system prune -a
+    docker cp ~/archivo jenkins:/opt/archivo
+
+
+GIT
+    gitlab
+    git --version
+    git log
+    git status
+    git init
+    git config --global user.name "Nombre Apellido"
+    git config --global user.email "correo@domino.com"
+    git config --global user.email "correo@gmail.com"
+    git clone git@gitlab.com:vdespa/my-static-website.git
+    git clean
+    git branch --list
+    git add .
+    git branch
+    git commit
+    git checkout <ltrecana>
+
+    Notes on Git Commands
+    GIT Commands:
+
+        Git Fetch is used to only fetch the metadata/new branch changes but does not bring any remote code changes to local changes​
+        git fetch​
+
+        Git Pull is used to fetch code changes from remote branch and merge it with local code​
+        git pull ​
+
+        Git Stash is used to save local changes in a backup directory​
+        git stash ​
+        git stash apply​
+
+        Git merge is used to merge local code changes with remote branch changes all together​
+        git merge​
+
+        Git rebase is used to merge local code changes with remote branch changes one by one​
+        git rebase -i <branch name>​
+        Example: git rebase -i origin/master and then git add filename and then git push –f (:x to save any file during rebase)​
+
+        Git add is used to add change to a commit​
+        git add <filename1....filename2>​
+        Example: git add test1.java test2.java​
+        git add *​
+
+        Git commit –m "message" is used to pass a commit message​
+        Example: git commit –m "This is the first commit in this branch"​
+
+        Git squash is used to merge multiple commits into single commit​
+        git squash​
+
+        Git push is used to push local changes to remote branch​
+        git push​
+
+
+helm commands
+
+    helm install --dry-run mimo
+
+
+
+KUBERNETES
+
+    alias k=kubectl
+    kubectl explain replicaset
+    kubectl scale replicaset new-replica-set --replicas=2
+    kubectl run nginx --image=nginx --dry-run=client -o yaml > lo_redirecionas.yaml
+    kubectl create deployment --image=nginx nginx --dry-run=client -o yaml > nginx-deployment.yaml
+    kubectl create deployment --image=nginx nginx --replicas=4 --dry-run=client -o yaml > nginx-deployment.yaml
+    kubectl expose pod nginx --type=NodePort --port=80 --name nginx-service  --dry-run=client -o yaml > nginx-svc.yaml
+    kubectl config set-context $(kubectl config current-context) -- namespace=dev
+    kubectl run nginx --image=nginx --dry-run=client -o yaml
+    kubectl create deployment --image=nginx nginx --dry-run=client -o yaml
+    kubectl create deployment nginx --image=nginx --replicas=4
+    kubectl scale deployment nginx --replicas=4
+    kubectl create deployment nginx --image=nginx --dry-run=client -o yaml > nginx-deployment.yaml
+    kubectl expose pod redis --port=6379 --name redis-service --dry-run=client -o yaml
+    kubectl create service clusterip redis --tcp=6379:6379 --dry-run=client -o yaml 
+    kubectl expose pod nginx --type=NodePort --port=80 --name=nginx-service --dry-run=client -o yaml
+    kubectl create service nodeport nginx --tcp=80:80 --node-port=30080 --dry-run=client -o yaml
+    kubectl run nginx-pod --image=nginx:alpine
+    kubectl run redis --image=redis:alpine --labels="tier=db" --dry-run=client -o yaml > redis.yaml
+    kubectl expose pod redis --name=redis-service --port=6379
+    kubectl create deploy webapp --image=kodekloud/webapp-color --replicas=3
+    kubectl run custom-nginx --image=nginx --port 8080
+    kubectl create namespace dev-ns 
+    kubectl create deploy redis-deploy --image=redis --replicas=2 --namespace=dev-ns
+    kubectl run httpd --image=httpd:alpine --port=80 --expose
+    kubectl get pods --namespace kube-system  -> para buscar el schedule y no esta corriendo
+    kubectl replace --force -f nginx.yaml
+    kubectl get pods --selector bu=finance
+    kubectl get all --selector env=prod --no-headers | wc -l
+    kubectl get pods --selector env=prod,bu=finance,tier=frontend
+    kubectl taint nodes node01 spray=mortein:NoSchedule
+    kubectl taint nodes controlplane node-role.kubernetes.io/control-plane:NoSchedule- "el guion al final lo uso para remover ese taint"
+    kubectl get pod --watch
+    kubectl label nodes <node-name> <label-key>=<label-value>
+    kubectl label nodes node01 size=Large
+    kubectl run --restart=Never --image=busybox static-busybox --dry-run=client -o yaml --command -- sleep 1000 > /etc/kubernetes/manifests/static-busybox.yaml
+    kubectl rollout status deployment/mi-deploy
+    kubectl rollout history deployment/mi-deploy
+    kubectl rollout undo deployment/mi-deploy
+    kubectl set image deploy mi-deploy mi-container=kodecloud/webapp-color:v2
+    kubectl create configmap webapp-config-map --from-literal=APP_COLOR=blue
+    kubectl create secret generic db-secret --from-literal=DB_Host=sql01 --from-literal=DB_User=root --from-literal=DB_Password=password123
+    kubectl -n elastic-stack exec -ti app -- cat /log/app.log
+    kubectl logs -c init-container   (para ver por que no arranca el pod)
+    kubectl drain node01 --ignore-daemonsets
+    kubectl uncordon node01
+    kubectl cordon node01
+    sudo apt-mark unhold kubeadm && \
+    sudo apt-mark hold kubeadm
+        kubectl drain nodo-a-actualizar
+        kubectl uncordon nodo-a-actualizar -> o mejor dicho recientemente actualizado
+    kubectl config view             -> ves los detalles de conexion a clusters
+    kubectl config get-clusters     -> ves la lista de cluster
+    kubectl describe pod -n kube-system kube-apiserver-cluster2-controlplane | grep etcd-servers    (podras ver si es externo)
+    kubectl -n kube-system describe pod etcd-cluster1-controlplane | grep data-dir
+    kubectl describe  pods -n kube-system etcd-cluster1-controlplane  | grep advertise-client-urls
+    kubectl describe  pods -n kube-system etcd-cluster1-controlplane  | grep pki
+    kubectl config use-context cluster2
+    kubectl delete pod -n kube-system kube-controller-manager-cluster2-controlplane kube-scheduler-cluster2-controlplane
+        k get pod -n kube-system | egrep 'sched|controll'
+    kubectl config --kubeconfig=/root/my-kube-config use-context research
+    kubectl config --kubeconfig=/root/my-kube-config current-context
+    kube proxy <> kubectl proxy
+    kubectl auth can-i create deployments
+    kubectl auth can-i delete nodes
+    kubectl auth can-i create deployments --as dev-user
+    kubectl auth can-i create deployments --as dev-user --namespace test
+    kubectl get pods --as dev-user
+    kubectl create role developer --namespace=default --verb=list,create,delete --resource=pods
+    kubectl create rolebinding dev-user-binding --namespace=default --role=developer --user=dev-user
+    k get pod -n kube-system kube-apiserver-controlplane -o yaml | grep autho
+    kubectl create token dashboard-sa   eso creo un token para esa service account que use para validar un servicio web del laboratorio
+    kubectl exec -it mi-pod -- ls /var/run/secrets/kubernetes.io/serviceaccount
+    kubectl exec -it mi-pod cat /var/run/secrets/kubernetes.io/serviceaccount/token
+    kubectl create secret docker-registry private-reg-cred --docker-username=dock_user --docker-password=dock_password --docker-server=myprivateregistry.com:5000 --docker-email=dock_user@myprivateregistry.com
+    kubectl exec ubuntu-sleeper -- whoami  (para ver cual usuario es usado para para ejecutar el pod)
+    k get networkpolicies
+    k describe networkpolicies payroll-policy
+    kubectl exec webapp -- cat /log/app.log
+
+
+
+
+ORACLE
+    alter tablespace SYSAUX rename datafile '/oracle04/oradata/TR9CRM65/SYSAUX_2.dbf' to '/oracle04_02/oradata/TR9CRM65/SYSAUX_2.dbf'
+    alter tablespace sysaux add datafile '/oracle01/oradata/TR9CRM65/SYSAUX_3.dbf' size 1024M
+    alter database datafile '/oracle99_02/ORACLE/oradata/TRN9MCS/POOL_DATA_014.dbf' resize 8000M
+    alter tablespace sysaux add datafile '/oracle03/oradata/TRN9OMS/SYSAUX_3.dbf' size 500M;
+    alter tablespace undotbs add datafile '/oracle04_02/oradata/TR9CRM65/UNDOTBS_2.dbf' size 1024M;
+    Mudanza de datafile
+        1.- ALTER TABLESPACE POOL_DATA OFFLINE NORMAL;
+        2.- cd /oracle03_02/oradata/TRN9OMS
+        3.- mv /oracle02_02/oradata/TRN9OMS/POOL_DATA_005.dbf .
+        4.- ALTER TABLESPACE POOL_DATA RENAME DATAFILE '/oracle02_02/oradata/TRN9OMS/POOL_DATA_005.dbf' to '/oracle03_02/oradata/TRN9OMS/POOL_DATA_005.dbf';
+        5.- ALTER TABLESPACE POOL_DATA ONLINE;
+        6.- commit;
+    Migracion
+        ALTER TABLESPACE SYSAUX OFFLINE NORMAL;
+        ALTER TABLESPACE SYSAUX RENAME DATAFILE '/oracle04/oradata/TRN9TOOL/SYSAUX_1.dbf' to '/oracle02/oradata/TRN9TOOL/SYSAUX_1.dbf';
+        ALTER TABLESPACE SYSAUX RENAME DATAFILE '/oracle04/oradata/TRN9TOOL/SYSAUX_2.dbf' to '/oracle02/oradata/TRN9TOOL/SYSAUX_2.dbf';
+        ALTER TABLESPACE SYSAUX ONLINE;
+    Mudanza temp_system redo_undotbs
+          shutdown normal;
+          STARTUP MOUNT;
+            ALTER DATABASE RENAME FILE '/oracle04/oradata/TRN9TOOL/TEMP_1.dbf' to '/oracle02/oradata/TRN9TOOL/TEMP_1.dbf';
+            ALTER DATABASE RENAME FILE '/oracle04/oradata/TRN9TOOL/SYSTEM_1.dbf' to '/oracle02/oradata/TRN9TOOL/SYSTEM_1.dbf';
+            ALTER DATABASE RENAME FILE '/oracle04/oradata/TRN9TOOL/UNDOTBS_1.dbf' to '/oracle02/oradata/TRN9TOOL/UNDOTBS_1.dbf'; 
+            ALTER DATABASE RENAME FILE '/oracle04_02/oradata/TRN9TOOL/redo_g4_m1.dbf' to '/oracle02/oradata/TRN9TOOL/redo_g4_m1.dbf';
+            ALTER DATABASE RENAME FILE '/oracle04_02/oradata/TRN9TOOL/redo_g4_m2.dbf' to '/oracle02/oradata/TRN9TOOL/redo_g4_m2.dbf';
+            ALTER DATABASE RENAME FILE '/oracle04_02/oradata/TRN9TOOL/redo_g3_m1.dbf' to '/oracle02/oradata/TRN9TOOL/redo_g3_m1.dbf';
+            ALTER DATABASE RENAME FILE '/oracle04_02/oradata/TRN9TOOL/redo_g3_m2.dbf' to '/oracle02/oradata/TRN9TOOL/redo_g3_m2.dbf';
+            ALTER DATABASE RENAME FILE '/oracle04_02/oradata/TRN9TOOL/redo_g2_m1.dbf' to '/oracle02/oradata/TRN9TOOL/redo_g2_m1.dbf';
+            ALTER DATABASE RENAME FILE '/oracle04_02/oradata/TRN9TOOL/redo_g2_m2.dbf' to '/oracle02/oradata/TRN9TOOL/redo_g2_m2.dbf';
+            ALTER DATABASE RENAME FILE '/oracle04_02/oradata/TRN9TOOL/redo_g1_m1.dbf' to '/oracle02/oradata/TRN9TOOL/redo_g1_m1.dbf';
+            ALTER DATABASE RENAME FILE '/oracle04_02/oradata/TRN9TOOL/redo_g1_m2.dbf' to '/oracle02/oradata/TRN9TOOL/redo_g1_m2.dbf';
+          ALTER DATABASE OPEN;
+    set linesize 200;
+    set pages 1000;
+    column PRINCIPAL format a10;
+    column HOST format a10;
+    column lower_port format a10;
+    column acl format a50;
+    SQL> select name from v$controlfile;
+    SQL> show parameter control_files
+    SQL> show parameter spfile
